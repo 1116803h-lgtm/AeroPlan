@@ -57,6 +57,38 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
   padding:14px 16px 20px;
   display:flex;flex-direction:column;gap:12px;
 }
+
+/* ── FRANJA DE ESTADÍSTICAS FIJA ── */
+.stats-bar{
+  flex-shrink:0;
+  background:var(--bg3);
+  border-bottom:1px solid var(--border);
+  padding:8px 12px;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:4px 6px;
+}
+.sb-stat{
+  background:var(--bg4);
+  border:1px solid var(--border);
+  border-radius:5px;
+  padding:5px 7px;
+  display:flex;flex-direction:column;gap:1px;
+  min-width:0;
+}
+.sb-lbl{
+  font-family:var(--mono);font-size:7.5px;
+  color:var(--text3);text-transform:uppercase;
+  letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.sb-val{
+  font-family:var(--mono);font-size:13px;font-weight:700;
+  color:var(--acc);line-height:1.1;
+}
+.sb-val.warn{color:var(--warn)}
+.sb-val.ok{color:var(--ok)}
+.sb-val.err{color:var(--err)}
+.sb-unit{font-family:var(--mono);font-size:8px;color:var(--text2);font-weight:400}
 /* scrollbar siempre visible y discreta */
 .sidebar-body::-webkit-scrollbar{width:5px}
 .sidebar-body::-webkit-scrollbar-track{background:var(--bg3)}
@@ -100,9 +132,43 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .f select option{background:var(--bg3)}
 .f-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .f-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-.unit-wrap{position:relative}
-.unit-wrap input{padding-right:34px}
+.unit-wrap{position:relative;display:flex;align-items:center}
+.unit-wrap input{padding-right:34px;padding-left:6px;flex:1;min-width:0}
 .unit-tag{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:9px;color:var(--text3);pointer-events:none}
+
+/* Ocultar flechas nativas — Safari/Chrome/Firefox */
+.unit-wrap input[type=number]::-webkit-outer-spin-button,
+.unit-wrap input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.unit-wrap input[type=number]{-moz-appearance:textfield;appearance:textfield}
+
+/* Stepper propio: botones − + al lado del input */
+.num-wrap{display:flex;align-items:center;gap:3px;width:100%}
+.num-wrap input{flex:1;min-width:0;text-align:center;padding:6px 4px}
+.num-wrap input[type=number]::-webkit-outer-spin-button,
+.num-wrap input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.num-wrap input[type=number]{-moz-appearance:textfield;appearance:textfield}
+.num-btn{width:26px;height:28px;flex-shrink:0;
+  background:var(--bg4);border:1px solid var(--border2);border-radius:4px;
+  color:var(--text);font-size:14px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  user-select:none;transition:background .1s,border-color .1s;line-height:1}
+.num-btn:hover{background:var(--acc-dim);border-color:var(--acc);color:var(--acc)}
+.num-btn:active{background:var(--acc);color:#000}
+.num-unit{font-family:var(--mono);font-size:9px;color:var(--text3);
+  white-space:nowrap;padding:0 3px;flex-shrink:0}
+
+/* ─── ÁNGULO MANUAL ─── */
+#flight_angle_slider{
+  width:100%;height:4px;border-radius:2px;
+  background:var(--border2);accent-color:var(--acc);cursor:pointer;
+  -webkit-appearance:none;appearance:none;outline:none
+}
+#flight_angle_slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;
+  border-radius:50%;background:var(--acc);cursor:pointer;
+  border:2px solid #000;box-shadow:0 0 4px rgba(0,229,255,.4)
+}
+#angleCanvas{border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:block}
 
 /* ─── STATS ─── */
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
@@ -233,7 +299,54 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
     </div>
   </div>
 
+
+  <!-- ── ESTADÍSTICAS FIJAS ── -->
+  <div class="stats-bar">
+    <div class="sb-stat"><div class="sb-lbl">GSD</div><div class="sb-val" id="st_gsd">—</div><div class="sb-unit">cm/px</div></div>
+    <div class="sb-stat"><div class="sb-lbl">Área</div><div class="sb-val" id="st_area">—</div><div class="sb-unit">ha</div></div>
+    <div class="sb-stat"><div class="sb-lbl">Waypoints</div><div class="sb-val" id="st_wps">—</div><div class="sb-unit">puntos</div></div>
+    <div class="sb-stat"><div class="sb-lbl">Distancia</div><div class="sb-val" id="st_dist">—</div><div class="sb-unit">km</div></div>
+    <div class="sb-stat"><div class="sb-lbl">Fotos est.</div><div class="sb-val" id="st_fotos">—</div><div class="sb-unit">imgs</div></div>
+    <div class="sb-stat"><div class="sb-lbl">Tiempo est.</div><div class="sb-val" id="st_tiempo">—</div><div class="sb-unit">min</div></div>
+    <div class="sb-stat"><div class="sb-lbl">Sep. pasadas</div><div class="sb-val" id="st_sep">—</div><div class="sb-unit">m</div></div>
+    <div class="sb-stat"><div class="sb-lbl">Intervalo foto</div><div class="sb-val" id="st_interval">—</div><div class="sb-unit">s</div></div>
+    <div class="sb-stat"><div class="sb-lbl">Pasadas</div><div class="sb-val" id="st_pasadas">—</div><div class="sb-unit">líneas</div></div>
+  </div><!-- /stats-bar -->
   <div class="sidebar-body" id="sidebarBody">
+
+    <!-- ── POLÍGONO ── -->
+    <div class="sec">
+      <div class="sec-hdr" onclick="toggleSec(this)">
+        <div class="sec-dot" style="background:var(--warn)"></div>
+        <div class="sec-title">Polígono de vuelo</div>
+        <span class="sec-arrow open">▶</span>
+      </div>
+      <div class="sec-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <button class="btn btn-prim" id="btnDraw" onclick="startDraw()" style="justify-content:center">✏️ Trazar</button>
+          <button class="btn btn-sec" onclick="openCoordsModal()" style="justify-content:center">📋 Coordenadas</button>
+          <button class="btn btn-sec" onclick="openImportModal()" style="justify-content:center">📂 Importar</button>
+          <button class="btn btn-sec" onclick="undoLast()" style="justify-content:center">↩ Deshacer</button>
+          <button class="btn btn-danger" onclick="clearPoly()" style="justify-content:center;grid-column:span 2">🗑 Limpiar</button>
+        </div>
+        <div class="info">
+          <strong>Trazar:</strong> clic en mapa para colocar vértices.<br>
+          <strong>Coordenadas:</strong> ingresa lat/lon manualmente.<br>
+          <strong>Importar:</strong> carga un archivo KML, KMZ o GeoJSON.
+        </div>
+        <div style="height:1px;background:var(--border);margin:2px 0"></div>
+        <div class="f"><label>Offset de polígono</label>
+          <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center">
+            <div class="num-wrap"><button class="num-btn" type="button" onclick="step('poly_offset',-1)" tabindex="-1">−</button><input type="number" id="poly_offset" value="0" min="-100" max="200" step="5"
+                oninput="onOffsetChange()"/><button class="num-btn" type="button" onclick="step('poly_offset',1)" tabindex="-1">+</button><span class="num-unit">m</span></div>
+            <button class="btn btn-sec" onclick="setOffset(10)" style="padding:6px 10px;font-size:11px">+10</button>
+            <button class="btn btn-sec" onclick="setOffset(20)" style="padding:6px 10px;font-size:11px">+20</button>
+            <button class="btn btn-sec" onclick="resetOffset()" style="padding:6px 9px">↺</button>
+          </div>
+        </div>
+        <div class="info" id="offsetInfo" style="display:none"></div>
+      </div>
+    </div>
 
     <!-- ── MISIÓN ── -->
     <div class="sec">
@@ -263,6 +376,32 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
           Genera un waypoint por cada foto. Control exacto de traslapes.<br>
           <span class="mode-warn" id="wpsWarn" style="display:none">⚠ &gt;199 WP — puede crashear RC2</span>
         </div>
+
+        <!-- Panel Modo A: opción detener + takePhoto -->
+        <div id="modeAPanel" style="display:none;flex-direction:column;gap:8px;margin-top:2px">
+          <div style="height:1px;background:var(--border);margin:2px 0"></div>
+          <div class="toggle-row">
+            <div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;font-weight:700">
+                📷 Detener + Foto en cada WP
+              </div>
+              <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:3px;line-height:1.5">
+                Incluye <code style="color:var(--acc)">takePhoto</code> y <code style="color:var(--acc)">toPointAndStop</code> en el KMZ
+              </div>
+            </div>
+            <label class="toggle" style="margin-left:12px;flex-shrink:0">
+              <input type="checkbox" id="stop_and_shoot">
+              <span class="tslider"></span>
+            </label>
+          </div>
+          <div id="stopShootNote" class="note" style="display:none;font-size:8.5px;line-height:1.7">
+            ⚠ <strong>Experimental en Air 3S + DJI Fly.</strong><br>
+            El drone <strong>sí se detiene</strong> en cada WP (confirmado).<br>
+            La acción <code>takePhoto</code> <strong>puede o no ejecutarse</strong> según firmware.<br>
+            Prueba primero con un polígono pequeño de 10–15 WP.<br>
+            <span style="color:var(--ok)">✓ Garantizado en drones Enterprise con DJI Pilot 2.</span>
+          </div>
+        </div>
         <div class="mode-desc" id="modeDescB" style="display:none">
           Solo waypoints en extremos de pasadas. Disparo manual por intervalo de tiempo en DJI Fly.<br>
           <span style="color:var(--ok)">✓ Recomendado para Air 3S</span>
@@ -283,10 +422,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 
         <div class="f-row" id="flightDirRow">
           <div class="f"><label>Dirección pasadas</label>
-            <select id="flight_dir">
+            <select id="flight_dir" onchange="onFlightDirChange()">
               <option value="auto">Auto (área)</option>
               <option value="ns">Norte–Sur</option>
               <option value="ew">Este–Oeste</option>
+              <option value="manual">Manual (ángulo libre)</option>
             </select>
           </div>
           <div class="f" style="justify-content:flex-end">
@@ -298,6 +438,37 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
           </div>
         </div>
 
+        <!-- Panel ángulo manual — visible solo cuando dir=manual -->
+        <div id="manualAnglePanel" style="display:none;flex-direction:column;gap:8px">
+          <div style="height:1px;background:var(--border);margin:2px 0"></div>
+          <div class="f-row" style="align-items:center;gap:8px">
+            <div class="f">
+              <label>Ángulo de pasadas</label>
+              <div class="num-wrap">
+                <button class="num-btn" type="button" onclick="stepAngle(-1)" tabindex="-1">−</button>
+                <input type="number" id="flight_angle" value="0" min="0" max="179" step="1"
+                  oninput="onAngleInput()" style="text-align:center"/>
+                <button class="num-btn" type="button" onclick="stepAngle(1)" tabindex="-1">+</button>
+                <span class="num-unit">°</span>
+              </div>
+            </div>
+            <div class="f" style="align-items:center;justify-content:center">
+              <!-- Indicador visual del ángulo -->
+              <canvas id="angleCanvas" width="54" height="54"
+                style="cursor:pointer;margin-top:14px"
+                onmousedown="startAngleDrag(event)"
+                ontouchstart="startAngleDrag(event)"></canvas>
+            </div>
+          </div>
+          <input type="range" id="flight_angle_slider" min="0" max="179" step="1" value="0"
+            oninput="onAngleSlider()"
+            style="width:100%;accent-color:var(--acc);cursor:pointer"/>
+          <div class="info" style="font-size:8.5px;line-height:1.6">
+            0° = Este–Oeste · 90° = Norte–Sur · Arrastra el indicador o usa el slider.<br>
+            <span id="angleNote" style="color:var(--acc)">Doble grilla añadirá pasadas a <span id="angleNote2">90</span>°.</span>
+          </div>
+        </div>
+
         <!-- Subdivisión de tramos + punto de vuelta — solo visible en modo B -->
         <div id="subdivPanel" style="display:none;flex-direction:column;gap:8px">
           <div style="height:1px;background:var(--border);margin:2px 0"></div>
@@ -305,7 +476,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
           <!-- Subdivisión -->
           <div class="f-row">
             <div class="f"><label>Subdivisión tramos</label>
-              <div class="unit-wrap"><input type="number" id="max_seg_dist" value="50" min="10" max="500" step="10" oninput="onSubdivChange()"/><span class="unit-tag">m</span></div>
+              <div class="num-wrap"><button class="num-btn" type="button" onclick="step('max_seg_dist',-1)" tabindex="-1">−</button><input type="number" id="max_seg_dist" value="50" min="10" max="500" step="10" oninput="onSubdivChange()"/><button class="num-btn" type="button" onclick="step('max_seg_dist',1)" tabindex="-1">+</button><span class="num-unit">m</span></div>
             </div>
             <div class="f" style="justify-content:flex-end">
               <label>Activar</label>
@@ -315,59 +486,26 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
               </div>
             </div>
           </div>
-          <div class="info" style="font-size:9px;line-height:1.6">
+          <div class="info" style="font-size:9px;line-height:1.6" id="subdivInfo">
             DJI Fly curva la trayectoria entre waypoints distantes. Subdividir tramos cada <span id="subdivDistLabel">50</span> m mantiene la ruta prácticamente recta y conserva el traslape.
           </div>
 
-          <!-- Punto de vuelta -->
-          <div class="toggle-row">
-            <div>
-              <div style="font-family:var(--mono);font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em">Punto de vuelta</div>
-              <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:2px">Reemplaza los 2 extremos de cada giro por 1 punto central</div>
+          <!-- Punto de vuelta — solo visible en Modo B, no en perimetral -->
+          <div id="turnMidpointPanel">
+            <div class="toggle-row">
+              <div>
+                <div style="font-family:var(--mono);font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em">Punto de vuelta</div>
+                <div style="font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:2px">Reemplaza los 2 extremos de cada giro por 1 punto central</div>
+              </div>
+              <label class="toggle"><input type="checkbox" id="turn_midpoint" onchange="onSubdivChange()"><span class="tslider"></span></label>
             </div>
-            <label class="toggle"><input type="checkbox" id="turn_midpoint" onchange="onSubdivChange()"><span class="tslider"></span></label>
-          </div>
-          <div class="info" style="font-size:9px;line-height:1.6" id="turnMidpointInfo" style="display:none">
-            ● <strong>Cian grande</strong> = extremo de pasada &nbsp;|&nbsp; ● <strong>Naranja</strong> = punto de vuelta &nbsp;|&nbsp; ● <strong>Ámbar pequeño</strong> = subdivisión
+            <div class="info" style="font-size:9px;line-height:1.6" id="turnMidpointInfo" style="display:none">
+              ● <strong>Cian grande</strong> = extremo de pasada &nbsp;|&nbsp; ● <strong>Naranja</strong> = punto de vuelta &nbsp;|&nbsp; ● <strong>Ámbar pequeño</strong> = subdivisión
+            </div>
           </div>
 
         </div>
 
-      </div>
-    </div>
-
-    <!-- ── VUELO ── -->
-    <div class="sec">
-      <div class="sec-hdr" onclick="toggleSec(this)">
-        <div class="sec-dot"></div>
-        <div class="sec-title">Parámetros de Vuelo</div>
-        <span class="sec-arrow open">▶</span>
-      </div>
-      <div class="sec-body">
-        <div class="f-row">
-          <div class="f"><label>Altura AGL</label>
-            <div class="unit-wrap"><input type="number" id="altura" value="80" min="20" max="400" step="5"/><span class="unit-tag">m</span></div>
-          </div>
-          <div class="f"><label>Velocidad</label>
-            <div class="unit-wrap"><input type="number" id="velocidad" value="5" min="1" max="15" step="0.5"/><span class="unit-tag">m/s</span></div>
-          </div>
-        </div>
-        <div class="f-row">
-          <div class="f"><label>Traslape frontal</label>
-            <div class="unit-wrap"><input type="number" id="overlap_f" value="80" min="50" max="95" step="5"/><span class="unit-tag">%</span></div>
-          </div>
-          <div class="f"><label>Traslape lateral</label>
-            <div class="unit-wrap"><input type="number" id="overlap_l" value="75" min="40" max="95" step="5"/><span class="unit-tag">%</span></div>
-          </div>
-        </div>
-        <div class="f-row">
-          <div class="f"><label>Seg. despegue</label>
-            <div class="unit-wrap"><input type="number" id="takeoff_height" value="30" min="20" max="100" step="5"/><span class="unit-tag">m</span></div>
-          </div>
-          <div class="f"><label>Gimbal pitch</label>
-            <div class="unit-wrap"><input type="number" id="gimbal" value="-90" min="-90" max="-30" step="5"/><span class="unit-tag">°</span></div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -465,69 +603,42 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       </div>
     </div>
 
-    <!-- ── POLÍGONO ── -->
+    <!-- ── VUELO ── -->
     <div class="sec">
       <div class="sec-hdr" onclick="toggleSec(this)">
-        <div class="sec-dot" style="background:var(--warn)"></div>
-        <div class="sec-title">Polígono de vuelo</div>
+        <div class="sec-dot"></div>
+        <div class="sec-title">Parámetros de Vuelo</div>
         <span class="sec-arrow open">▶</span>
       </div>
       <div class="sec-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-          <button class="btn btn-prim" id="btnDraw" onclick="startDraw()" style="justify-content:center">✏️ Trazar</button>
-          <button class="btn btn-sec" onclick="openCoordsModal()" style="justify-content:center">📋 Coordenadas</button>
-          <button class="btn btn-sec" onclick="openImportModal()" style="justify-content:center">📂 Importar</button>
-          <button class="btn btn-sec" onclick="undoLast()" style="justify-content:center">↩ Deshacer</button>
-          <button class="btn btn-danger" onclick="clearPoly()" style="justify-content:center;grid-column:span 2">🗑 Limpiar</button>
-        </div>
-        <div class="info">
-          <strong>Trazar:</strong> clic en mapa para colocar vértices.<br>
-          <strong>Coordenadas:</strong> ingresa lat/lon manualmente.<br>
-          <strong>Importar:</strong> carga un archivo KML, KMZ o GeoJSON.
-        </div>
-        <div style="height:1px;background:var(--border);margin:2px 0"></div>
-        <div class="f"><label>Offset de polígono</label>
-          <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center">
-            <div class="unit-wrap">
-              <input type="number" id="poly_offset" value="0" min="-100" max="200" step="5"
-                oninput="onOffsetChange()"/>
-              <span class="unit-tag">m</span>
-            </div>
-            <button class="btn btn-sec" onclick="setOffset(10)" style="padding:6px 10px;font-size:11px">+10</button>
-            <button class="btn btn-sec" onclick="setOffset(20)" style="padding:6px 10px;font-size:11px">+20</button>
-            <button class="btn btn-sec" onclick="resetOffset()" style="padding:6px 9px">↺</button>
+        <div class="f-row">
+          <div class="f"><label>Altura AGL</label>
+            <div class="num-wrap"><button class="num-btn" type="button" onclick="step('altura',-1)" tabindex="-1">−</button><input type="number" id="altura" value="80" min="20" max="400" step="5"/><button class="num-btn" type="button" onclick="step('altura',1)" tabindex="-1">+</button><span class="num-unit">m</span></div>
+          </div>
+          <div class="f"><label>Velocidad</label>
+            <div class="num-wrap"><button class="num-btn" type="button" onclick="step('velocidad',-1)" tabindex="-1">−</button><input type="number" id="velocidad" value="5" min="1" max="15" step="0.5"/><button class="num-btn" type="button" onclick="step('velocidad',1)" tabindex="-1">+</button><span class="num-unit">m/s</span></div>
           </div>
         </div>
-        <div class="info" id="offsetInfo" style="display:none"></div>
+        <div class="f-row">
+          <div class="f"><label>Traslape frontal</label>
+            <div class="num-wrap"><button class="num-btn" type="button" onclick="step('overlap_f',-1)" tabindex="-1">−</button><input type="number" id="overlap_f" value="80" min="50" max="95" step="5"/><button class="num-btn" type="button" onclick="step('overlap_f',1)" tabindex="-1">+</button><span class="num-unit">%</span></div>
+          </div>
+          <div class="f"><label>Traslape lateral</label>
+            <div class="num-wrap"><button class="num-btn" type="button" onclick="step('overlap_l',-1)" tabindex="-1">−</button><input type="number" id="overlap_l" value="75" min="40" max="95" step="5"/><button class="num-btn" type="button" onclick="step('overlap_l',1)" tabindex="-1">+</button><span class="num-unit">%</span></div>
+          </div>
+        </div>
+        <div class="f-row">
+          <div class="f"><label>Seg. despegue</label>
+            <div class="num-wrap"><button class="num-btn" type="button" onclick="step('takeoff_height',-1)" tabindex="-1">−</button><input type="number" id="takeoff_height" value="30" min="20" max="100" step="5"/><button class="num-btn" type="button" onclick="step('takeoff_height',1)" tabindex="-1">+</button><span class="num-unit">m</span></div>
+          </div>
+          <div class="f"><label>Gimbal pitch</label>
+            <div class="num-wrap"><button class="num-btn" type="button" onclick="step('gimbal',-1)" tabindex="-1">−</button><input type="number" id="gimbal" value="-90" min="-90" max="-30" step="5"/><button class="num-btn" type="button" onclick="step('gimbal',1)" tabindex="-1">+</button><span class="num-unit">°</span></div>
+          </div>
+        </div>
       </div>
     </div>
+
 
-    <!-- ── ESTADÍSTICAS ── -->
-    <div class="sec">
-      <div class="sec-hdr" onclick="toggleSec(this)">
-        <div class="sec-dot" style="background:var(--ok)"></div>
-        <div class="sec-title">Estadísticas de Misión</div>
-        <span class="sec-arrow open">▶</span>
-      </div>
-      <div class="sec-body">
-        <div class="stats">
-          <div class="stat"><div class="stat-lbl">GSD</div><div class="stat-val" id="st_gsd">—</div><div class="stat-unit">cm/px</div></div>
-          <div class="stat"><div class="stat-lbl">Área</div><div class="stat-val" id="st_area">—</div><div class="stat-unit">ha</div></div>
-          <div class="stat"><div class="stat-lbl">Waypoints</div><div class="stat-val" id="st_wps">—</div><div class="stat-unit">puntos</div></div>
-          <div class="stat"><div class="stat-lbl">Distancia</div><div class="stat-val" id="st_dist">—</div><div class="stat-unit">km</div></div>
-          <div class="stat"><div class="stat-lbl">Fotos est.</div><div class="stat-val" id="st_fotos">—</div><div class="stat-unit">imgs</div></div>
-          <div class="stat"><div class="stat-lbl">Tiempo est.</div><div class="stat-val" id="st_tiempo">—</div><div class="stat-unit">min</div></div>
-        </div>
-        <div class="f-row" style="margin-top:4px">
-          <div class="f"><label>Sep. pasadas</label>
-            <div class="unit-wrap"><input type="text" id="st_sep" readonly style="color:var(--text2)"/><span class="unit-tag">m</span></div>
-          </div>
-          <div class="f"><label>Intervalo foto</label>
-            <div class="unit-wrap"><input type="text" id="st_interval" readonly style="color:var(--text2)"/><span class="unit-tag">s</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- ── GUARDAR / CARGAR MISIÓN ── -->
     <div class="sec">
@@ -568,7 +679,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
         <div id="modeB_interval_panel" style="display:none">
           <div class="f-row" style="margin-bottom:6px">
             <div class="f"><label>Intervalo captura</label>
-              <div class="unit-wrap"><input type="number" id="intervalo_seg" value="3" min="1" max="30" step="0.5" oninput="onIntervalChange()"/><span class="unit-tag">s</span></div>
+              <div class="num-wrap"><button class="num-btn" type="button" onclick="step('intervalo_seg',-1)" tabindex="-1">−</button><input type="number" id="intervalo_seg" value="3" min="1" max="30" step="0.5" oninput="onIntervalChange()"/><button class="num-btn" type="button" onclick="step('intervalo_seg',1)" tabindex="-1">+</button><span class="num-unit">s</span></div>
             </div>
             <div class="f"><label>Vel. calculada</label>
               <div class="unit-wrap"><input type="text" id="vel_calculada" readonly style="color:var(--acc)"/><span class="unit-tag">m/s</span></div>
@@ -614,6 +725,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
         </div>
       </div>
     </div>
+
 
   </div><!-- /sidebar-body -->
 </div><!-- /sidebar -->
@@ -984,11 +1096,19 @@ function setMisionMode(m){
   document.getElementById('modeDescA').style.display=m==='A'?'block':'none';
   document.getElementById('modeDescB').style.display=m==='B'?'block':'none';
   document.getElementById('modeDescC').style.display=m==='C'?'block':'none';
+  const modeAPanel=document.getElementById('modeAPanel');
+  if(modeAPanel) modeAPanel.style.display=m==='A'?'flex':'none';
   document.getElementById('modeB_interval_panel').style.display=m==='B'?'block':'none';
   const subdivPanel=document.getElementById('subdivPanel');
-  if(subdivPanel) subdivPanel.style.display=m==='B'?'flex':'none';
+  if(subdivPanel) subdivPanel.style.display=(m==='B'||m==='C')?'flex':'none';
   const perimPanel=document.getElementById('perimPanel');
   if(perimPanel) perimPanel.style.display=m==='C'?'flex':'none';
+  // Punto de vuelta solo en Modo B
+  const tmpEl=document.getElementById('turnMidpointPanel');
+  if(tmpEl) tmpEl.style.display=m==='B'?'block':'none';
+  // Texto de subdivisión según modo
+  const siEl=document.getElementById('subdivInfo');
+  if(siEl){ const d=document.getElementById('max_seg_dist')?.value||50; siEl.innerHTML=m==='C'?'Subdivide los lados del peru00edmetro cada <span id="subdivDistLabel">'+d+'</span> m para mantener la trayectoria recta sobre el borde.':'DJI Fly curva la trayectoria entre waypoints distantes. Subdividir tramos cada <span id="subdivDistLabel">'+d+'</span> m mantiene la ruta pru00e1cticamente recta y conserva el traslape.'; }
   // Ocultar dirección pasadas y doble grilla en modo C
   const flightOptions=document.getElementById('flightDirRow');
   if(flightOptions) flightOptions.style.display=m==='C'?'none':'grid';
@@ -1182,22 +1302,16 @@ function drawLeafletRoute(){
 
   const COLORS = ['#ffb800','#00b8cc','#22c55e','#a855f7','#ef4444','#fb923c'];
 
-  // ── MODO A: pasadas coloreadas + círculo en cada WP ─────────────────────────
+  // ── MODO A: línea continua completa + círculo en cada WP ────────────────────
+  // Una sola polyline con todos los WPs en orden — igual que el canvas (ctx.lineTo)
+  // Los "retornos" entre pasadas quedan conectados automáticamente
   if(misionMode==='A'){
-    let strips=[], cur=[wps[0]];
-    for(let i=1;i<wps.length;i++){
-      if(wps[i].heading !== wps[i-1].heading){ strips.push(cur); cur=[wps[i]]; }
-      else cur.push(wps[i]);
-    }
-    strips.push(cur);
-    strips.forEach((strip,si)=>{
-      L.polyline(strip.map(w=>[w.lat,w.lng]),{
-        color: COLORS[si%COLORS.length], weight:1.5, opacity:0.85
-      }).addTo(lRouteLayer);
-    });
+    L.polyline(wps.map(w=>[w.lat,w.lng]),{
+      color:'rgba(255,184,0,0.75)', weight:1.5
+    }).addTo(lRouteLayer);
     wps.forEach(w=>{
       L.circleMarker([w.lat,w.lng],{
-        radius:3, color:'#ffb800', fillColor:'#ffb800', fillOpacity:1, weight:0
+        radius:3, color:'rgba(0,0,0,0.4)', fillColor:'#ffb800', fillOpacity:1, weight:1
       }).addTo(lRouteLayer);
     });
     return;
@@ -1890,156 +2004,271 @@ function getSensor(){
 function calcGSD(h){const s=getSensor();return(s.sw_mm/s.res_w)*100*h/s.f_mm;}
 function calcFootprint(h){const s=getSensor();return{fw:h*(s.sw_mm/s.f_mm),fh:h*(s.sh_mm/s.f_mm)};}
 
-function generateWaypoints(){
-  if(polyPoints.length<3) return[];
-  const workPoly=getWorkPoly();
-  const h=+document.getElementById('altura').value;
-  const vel=+document.getElementById('velocidad').value;
-  const olF=+document.getElementById('overlap_f').value/100;
-  const olL=+document.getElementById('overlap_l').value/100;
-  const gimb=+document.getElementById('gimbal').value;
-  const dir=document.getElementById('flight_dir').value;
-  const dbl=document.getElementById('double_grid').checked;
-  const fp=calcFootprint(h);
-  const stepAlong=fp.fh*(1-olF);   // distancia entre fotos a lo largo de pasada
-  const stepCross=fp.fw*(1-olL);   // separación entre pasadas
-  const bnds=polygonBounds(workPoly);
-  const R=6371000, toRad=Math.PI/180;
-  const latMid=(bnds.minLat+bnds.maxLat)/2;
-  const widthEW =haversine(latMid,bnds.minLng,latMid,bnds.maxLng);
-  const heightNS=haversine(bnds.minLat,(bnds.minLng+bnds.maxLng)/2,
-                            bnds.maxLat,(bnds.minLng+bnds.maxLng)/2);
-  const useNS=(dir==='ns')||(dir==='auto'&&heightNS<widthEW);
-
-  // ── Intersección segmento-segmento (retorna t en [0,1] o null) ──────────────
-  function segIntersectT(ax,ay,bx,by,cx,cy,dx,dy){
-    const denom=(bx-ax)*(dy-cy)-(by-ay)*(dx-cx);
-    if(Math.abs(denom)<1e-12) return null;
-    const t=((cx-ax)*(dy-cy)-(cy-ay)*(dx-cx))/denom;
-    const u=((cx-ax)*(by-ay)-(cy-ay)*(bx-ax))/denom;
-    if(t>=-1e-9&&t<=1+1e-9&&u>=-1e-9&&u<=1+1e-9) return t;
-    return null;
+// ══════════════════════════════════════════════════
+// DIRECCIÓN MANUAL — UI y canvas de ángulo
+// ══════════════════════════════════════════════════
+function onFlightDirChange(){
+  const dir = document.getElementById('flight_dir').value;
+  const panel = document.getElementById('manualAnglePanel');
+  if(panel) panel.style.display = dir==='manual' ? 'flex' : 'none';
+  drawAngleCanvas();
+  if(polyPoints.length>=3){
+    updateStats();
+    if(gmap) drawGMapRoute(); if(leafletMode) drawLeafletRoute();
+    if(demoMode) renderCanvas();
   }
+}
 
-  // ── Intersecciones de una línea horizontal (lat=const) con el polígono ──────
-  // Devuelve array de lng ordenado donde la línea cruza el borde del polígono
-  function hLinePolyIntersections(lat, poly){
+function getManualAngle(){
+  return +(document.getElementById('flight_angle')?.value||0);
+}
+
+function onAngleInput(){
+  let v = +document.getElementById('flight_angle').value;
+  v = ((v%180)+180)%180; // normalizar 0-179
+  document.getElementById('flight_angle').value = v;
+  document.getElementById('flight_angle_slider').value = v;
+  // actualizar nota doble grilla
+  const n2 = document.getElementById('angleNote2');
+  if(n2) n2.textContent = ((v+90)%180);
+  drawAngleCanvas();
+  if(polyPoints.length>=3){
+    updateStats();
+    if(gmap) drawGMapRoute(); if(leafletMode) drawLeafletRoute();
+    if(demoMode) renderCanvas();
+  }
+}
+
+function onAngleSlider(){
+  const v = +document.getElementById('flight_angle_slider').value;
+  document.getElementById('flight_angle').value = v;
+  onAngleInput();
+}
+
+function stepAngle(dir){
+  const el = document.getElementById('flight_angle');
+  let v = (+el.value + dir + 180) % 180;
+  el.value = v;
+  onAngleInput();
+}
+
+// Canvas circular indicador de ángulo
+function drawAngleCanvas(){
+  const cv = document.getElementById('angleCanvas');
+  if(!cv) return;
+  const ctx2 = cv.getContext('2d');
+  const W = cv.width, H = cv.height, cx = W/2, cy = H/2, r = W/2-4;
+  const ang = getManualAngle();
+  const rad = (ang-90) * Math.PI/180; // 0°=Este → arriba=Norte en canvas
+
+  ctx2.clearRect(0,0,W,H);
+
+  // Fondo
+  ctx2.beginPath(); ctx2.arc(cx,cy,r,0,Math.PI*2);
+  ctx2.fillStyle='#0d1a2e'; ctx2.fill();
+  ctx2.strokeStyle='#1e3a5f'; ctx2.lineWidth=1; ctx2.stroke();
+
+  // Marcas cardinales
+  ctx2.fillStyle='#2a4a6f'; ctx2.font='7px monospace'; ctx2.textAlign='center';
+  ctx2.fillText('N',cx,cy-r+10);
+  ctx2.fillText('S',cx,cy+r-3);
+  ctx2.fillText('E',cx+r-5,cy+3);
+  ctx2.fillText('O',cx-r+5,cy+3);
+
+  // Línea de pasada (bidireccional)
+  const lx = Math.cos(rad)*r*0.8, ly = Math.sin(rad)*r*0.8;
+  ctx2.beginPath();
+  ctx2.moveTo(cx-lx, cy-ly);
+  ctx2.lineTo(cx+lx, cy+ly);
+  ctx2.strokeStyle='#00e5ff'; ctx2.lineWidth=2;
+  ctx2.stroke();
+
+  // Punto central
+  ctx2.beginPath(); ctx2.arc(cx,cy,3,0,Math.PI*2);
+  ctx2.fillStyle='#00e5ff'; ctx2.fill();
+
+  // Flechita de dirección
+  ctx2.beginPath();
+  ctx2.moveTo(cx+lx, cy+ly);
+  ctx2.lineTo(cx+lx - Math.cos(rad-0.4)*8, cy+ly - Math.sin(rad-0.4)*8);
+  ctx2.lineTo(cx+lx - Math.cos(rad+0.4)*8, cy+ly - Math.sin(rad+0.4)*8);
+  ctx2.closePath();
+  ctx2.fillStyle='#00e5ff'; ctx2.fill();
+}
+
+// Arrastrar el canvas para cambiar el ángulo
+let _draggingAngle = false;
+function startAngleDrag(e){
+  _draggingAngle = true;
+  updateAngleFromEvent(e);
+  const up = ()=>{ _draggingAngle=false; document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); document.removeEventListener('touchmove',mv); document.removeEventListener('touchend',up); };
+  const mv = (e2)=>{ if(_draggingAngle) updateAngleFromEvent(e2); };
+  document.addEventListener('mousemove',mv);
+  document.addEventListener('mouseup',up);
+  document.addEventListener('touchmove',mv,{passive:false});
+  document.addEventListener('touchend',up);
+}
+function updateAngleFromEvent(e){
+  const cv = document.getElementById('angleCanvas');
+  if(!cv) return;
+  const rect = cv.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const dx = clientX - rect.left - cv.width/2;
+  const dy = clientY - rect.top  - cv.height/2;
+  // atan2 desde el norte, en sentido horario
+  let deg = Math.round(Math.atan2(dx,-dy) * 180/Math.PI);
+  deg = ((deg%180)+180)%180;
+  document.getElementById('flight_angle').value = deg;
+  document.getElementById('flight_angle_slider').value = deg;
+  const n2 = document.getElementById('angleNote2');
+  if(n2) n2.textContent = ((deg+90)%180);
+  drawAngleCanvas();
+  if(polyPoints.length>=3){
+    updateStats();
+    if(gmap) drawGMapRoute(); if(leafletMode) drawLeafletRoute();
+    if(demoMode) renderCanvas();
+  }
+  if(e.touches) e.preventDefault();
+}
+
+// ══════════════════════════════════════════════════
+// NÚCLEO: GRILLA ROTADA A ÁNGULO ARBITRARIO
+// Algoritmo:
+//   1. Proyectar el polígono a metros (plano local centrado en centroide)
+//   2. Rotar los vértices por -angleDeg
+//   3. Generar pasadas horizontales en el sistema rotado
+//   4. Rotar los waypoints de vuelta por +angleDeg
+//   5. Convertir de metros a lat/lng
+// ══════════════════════════════════════════════════
+function makeAngledGrid(angleDeg, stepAlong, stepCross, vel, gimb, workPoly, photoMode){
+  const R = 6371000, toRad = Math.PI/180;
+  const n = workPoly.length;
+
+  // Centroide
+  const cLat = workPoly.reduce((s,p)=>s+p.lat,0)/n;
+  const cLng = workPoly.reduce((s,p)=>s+p.lng,0)/n;
+  const cosLat = Math.cos(cLat*toRad);
+
+  // Proyección lat/lng → metros locales
+  const toM = p => ({
+    x: (p.lng-cLng)*toRad*R*cosLat,
+    y: (p.lat-cLat)*toRad*R
+  });
+  // Metros locales → lat/lng
+  const toLl = (x,y) => ({
+    lat: cLat + y/(R*toRad),
+    lng: cLng + x/(R*cosLat*toRad)
+  });
+
+  // Rotar punto 2D
+  const rot = (p, a) => {
+    const c=Math.cos(a), s=Math.sin(a);
+    return {x: p.x*c-p.y*s, y: p.x*s+p.y*c};
+  };
+
+  const aRad = angleDeg * toRad;
+
+  // Polígono en metros, rotado por -aRad
+  const polyM = workPoly.map(p => rot(toM(p), -aRad));
+
+  // Bounding box del polígono rotado
+  const minX = Math.min(...polyM.map(p=>p.x));
+  const maxX = Math.max(...polyM.map(p=>p.x));
+  const minY = Math.min(...polyM.map(p=>p.y));
+  const maxY = Math.max(...polyM.map(p=>p.y));
+
+  // Intersección de línea horizontal y=yVal con el polígono rotado
+  function hIntersect(yVal){
     const xs=[];
-    const n=poly.length;
     for(let i=0;i<n;i++){
       const j=(i+1)%n;
-      const ay=poly[i].lat, ax=poly[i].lng;
-      const by=poly[j].lat, bx=poly[j].lng;
-      if((ay-lat)*(by-lat)>0) continue; // mismo lado, no cruza
-      if(Math.abs(by-ay)<1e-10) continue; // segmento horizontal, ignorar
-      const t=(lat-ay)/(by-ay);
+      const ay=polyM[i].y, ax=polyM[i].x;
+      const by=polyM[j].y, bx=polyM[j].x;
+      if((ay-yVal)*(by-yVal)>0) continue;
+      if(Math.abs(by-ay)<1e-6) continue;
+      const t=(yVal-ay)/(by-ay);
       if(t<-1e-9||t>1+1e-9) continue;
       xs.push(ax+(bx-ax)*t);
     }
     return xs.sort((a,b)=>a-b);
   }
 
-  // ── Intersecciones de una línea vertical (lng=const) con el polígono ────────
-  function vLinePolyIntersections(lng, poly){
-    const ys=[];
-    const n=poly.length;
-    for(let i=0;i<n;i++){
-      const j=(i+1)%n;
-      const ax=poly[i].lng, ay=poly[i].lat;
-      const bx=poly[j].lng, by=poly[j].lat;
-      if((ax-lng)*(bx-lng)>0) continue;
-      if(Math.abs(bx-ax)<1e-10) continue;
-      const t=(lng-ax)/(bx-ax);
-      if(t<-1e-9||t>1+1e-9) continue;
-      ys.push(ay+(by-ay)*t);
-    }
-    return ys.sort((a,b)=>a-b);
-  }
+  // Heading real del drone en el ángulo dado
+  // angleDeg=0 → vuela E-W → heading 90/270
+  // angleDeg=90 → vuela N-S → heading 0/180
+  const hdgA = (angleDeg+90)%360;        // dirección "hacia adelante"
+  const hdgB = (angleDeg+270)%360;       // dirección "hacia atrás"
 
-  function makeGrid(ns){
-    const wps=[];
+  const wps = [];
+  let si = 0;
+  for(let y=minY; y<=maxY+stepCross*0.5; y+=stepCross){
+    const xs = hIntersect(y);
+    if(xs.length<2) continue;
+    const xStart = xs[0], xEnd = xs[xs.length-1];
+    const stripLen = xEnd - xStart;
+    if(stripLen < 0.1) continue;
 
-    if(!ns){
-      // ── Pasadas E-W (líneas de latitud constante) ──────────────────────────
-      const nStrips=Math.ceil(heightNS/stepCross)+2;
-      const lat0=bnds.minLat-(stepCross/R)*(180/Math.PI);
+    const hdg = (si%2===0) ? hdgA : hdgB;
+    const goRight = (si%2===0);
 
-      for(let si=0;si<nStrips;si++){
-        const lat=lat0+si*(stepCross/R)*(180/Math.PI);
-        if(lat<bnds.minLat-0.001||lat>bnds.maxLat+0.001) continue;
-
-        // Encontrar intersecciones exactas con el polígono
-        const xs=hLinePolyIntersections(lat,workPoly);
-        if(xs.length<2) continue;
-
-        // Tomar el par más externo (puede haber polígonos cóncavos con más de 2)
-        const lngStart=xs[0];
-        const lngEnd  =xs[xs.length-1];
-
-        // Generar puntos de foto a lo largo de esta pasada
-        const cosLat=Math.cos(lat*toRad);
-        const stepLng=stepAlong/(R*cosLat)*(180/Math.PI);
-        const stripLen=haversine(lat,lngStart,lat,lngEnd);
-        const nPts=Math.max(2,Math.ceil(stripLen/stepAlong)+1);
-
-        // Distribución uniforme entre los extremos exactos del polígono
-        const hdg=(si%2===0)?90:-90;
-        const lngs=[];
-        // inicio en lngStart, fin en lngEnd, puntos interiores cada stepLng
-        // Primer punto = borde del polígono
-        lngs.push(lngStart);
-        // Puntos interiores
-        let lng=lngStart+stepLng;
-        while(lng<lngEnd-stepLng*0.5){
-          lngs.push(lng);
-          lng+=stepLng;
-        }
-        // Último punto = borde opuesto del polígono
-        lngs.push(lngEnd);
-
-        // Si la pasada es de derecha a izquierda, invertir
-        const orderedLngs=(hdg<0)?[...lngs].reverse():lngs;
-        orderedLngs.forEach(l=>wps.push({lat,lng:l,heading:hdg,vel,gimbal:gimb}));
-      }
-
+    if(photoMode){
+      // Modo A: puntos de foto a lo largo de la pasada
+      const pts = [xStart];
+      let x = xStart+stepAlong;
+      while(x < xEnd-stepAlong*0.5){ pts.push(x); x+=stepAlong; }
+      pts.push(xEnd);
+      const ordered = goRight ? pts : [...pts].reverse();
+      ordered.forEach(x=>{
+        const rotBack = rot({x,y}, aRad);
+        const ll = toLl(rotBack.x, rotBack.y);
+        wps.push({lat:ll.lat, lng:ll.lng, heading:Math.round(hdg), vel, gimbal:gimb});
+      });
     } else {
-      // ── Pasadas N-S (líneas de longitud constante) ─────────────────────────
-      const cosLat=Math.cos(latMid*toRad);
-      const nStrips=Math.ceil(widthEW/stepCross)+2;
-      const lng0=bnds.minLng-(stepCross/(R*cosLat))*(180/Math.PI);
-
-      for(let si=0;si<nStrips;si++){
-        const lng=lng0+si*(stepCross/(R*cosLat))*(180/Math.PI);
-        if(lng<bnds.minLng-0.001||lng>bnds.maxLng+0.001) continue;
-
-        const ys=vLinePolyIntersections(lng,workPoly);
-        if(ys.length<2) continue;
-
-        const latStart=ys[0];
-        const latEnd  =ys[ys.length-1];
-
-        const stepLat=stepAlong/R*(180/Math.PI);
-        const stripLen=haversine(latStart,lng,latEnd,lng);
-        const hdg=(si%2===0)?0:180;
-
-        const lats=[];
-        lats.push(latStart);
-        let lat=latStart+stepLat;
-        while(lat<latEnd-stepLat*0.5){
-          lats.push(lat);
-          lat+=stepLat;
-        }
-        lats.push(latEnd);
-
-        const orderedLats=(hdg===180)?[...lats].reverse():lats;
-        orderedLats.forEach(l=>wps.push({lat:l,lng,heading:hdg,vel,gimbal:gimb}));
-      }
+      // Modo B: solo extremos de pasada
+      const x1 = goRight ? xStart : xEnd;
+      const x2 = goRight ? xEnd   : xStart;
+      const r1 = rot({x:x1,y}, aRad); const ll1 = toLl(r1.x,r1.y);
+      const r2 = rot({x:x2,y}, aRad); const ll2 = toLl(r2.x,r2.y);
+      wps.push({lat:ll1.lat,lng:ll1.lng,heading:Math.round(hdg),vel,gimbal:gimb,isStripStart:true});
+      wps.push({lat:ll2.lat,lng:ll2.lng,heading:Math.round(hdg),vel,gimbal:gimb,isStripEnd:true});
     }
-    return wps;
+    si++;
   }
+  return wps;
+}
 
-  let wps=makeGrid(useNS);
-  if(dbl) wps=wps.concat(makeGrid(!useNS));
+// Obtiene el ángulo efectivo según el selector
+function getEffectiveAngle(workPoly){
+  const dir = document.getElementById('flight_dir').value;
+  if(dir==='manual') return getManualAngle();
+  if(dir==='ns') return 90;   // pasadas N-S = ángulo 90°
+  if(dir==='ew') return 0;    // pasadas E-W = ángulo 0°
+  // auto: elegir según el lado más largo del bounding box
+  const R=6371000, toRad=Math.PI/180;
+  const bnds = polygonBounds(workPoly);
+  const latMid=(bnds.minLat+bnds.maxLat)/2;
+  const wEW = haversine(latMid,bnds.minLng,latMid,bnds.maxLng);
+  const hNS = haversine(bnds.minLat,(bnds.minLng+bnds.maxLng)/2,bnds.maxLat,(bnds.minLng+bnds.maxLng)/2);
+  return hNS < wEW ? 0 : 90; // si es más alto que ancho → N-S (90°), si no → E-W (0°)
+}
+
+function generateWaypoints(){
+  if(polyPoints.length<3) return[];
+  const workPoly=getWorkPoly();
+  const h   =+document.getElementById('altura').value;
+  const vel =+document.getElementById('velocidad').value;
+  const olF =+document.getElementById('overlap_f').value/100;
+  const olL =+document.getElementById('overlap_l').value/100;
+  const gimb=+document.getElementById('gimbal').value;
+  const dbl =document.getElementById('double_grid').checked;
+  const fp  =calcFootprint(h);
+  const stepAlong=fp.fh*(1-olF);
+  const stepCross=fp.fw*(1-olL);
+
+  const angle = getEffectiveAngle(workPoly);
+  let wps = makeAngledGrid(angle, stepAlong, stepCross, vel, gimb, workPoly, true);
+  if(dbl) wps = wps.concat(makeAngledGrid((angle+90)%180, stepAlong, stepCross, vel, gimb, workPoly, true));
   return wps;
 }
 
@@ -2049,92 +2278,19 @@ function generateWaypoints(){
 function generateRouteWaypoints(){
   if(polyPoints.length<3) return[];
   const workPoly=getWorkPoly();
-  const h=+document.getElementById('altura').value;
-  const vel=+document.getElementById('velocidad').value;
-  const olL=+document.getElementById('overlap_l').value/100;
+  const h   =+document.getElementById('altura').value;
+  const vel =+document.getElementById('velocidad').value;
+  const olF =+document.getElementById('overlap_f').value/100;
+  const olL =+document.getElementById('overlap_l').value/100;
   const gimb=+document.getElementById('gimbal').value;
-  const dir=document.getElementById('flight_dir').value;
-  const dbl=document.getElementById('double_grid').checked;
-  const fp=calcFootprint(h);
+  const dbl =document.getElementById('double_grid').checked;
+  const fp  =calcFootprint(h);
+  const stepAlong=fp.fh*(1-olF);
   const stepCross=fp.fw*(1-olL);
-  const bnds=polygonBounds(workPoly);
-  const R=6371000,toRad=Math.PI/180;
-  const latMid=(bnds.minLat+bnds.maxLat)/2;
-  const widthEW =haversine(latMid,bnds.minLng,latMid,bnds.maxLng);
-  const heightNS=haversine(bnds.minLat,(bnds.minLng+bnds.maxLng)/2,
-                            bnds.maxLat,(bnds.minLng+bnds.maxLng)/2);
-  const useNS=(dir==='ns')||(dir==='auto'&&heightNS<widthEW);
 
-  function hLineIntersections(lat,poly){
-    const xs=[];
-    const n=poly.length;
-    for(let i=0;i<n;i++){
-      const j=(i+1)%n;
-      const ay=poly[i].lat,ax=poly[i].lng,by=poly[j].lat,bx=poly[j].lng;
-      if((ay-lat)*(by-lat)>0||Math.abs(by-ay)<1e-10) continue;
-      const t=(lat-ay)/(by-ay);
-      if(t<-1e-9||t>1+1e-9) continue;
-      xs.push(ax+(bx-ax)*t);
-    }
-    return xs.sort((a,b)=>a-b);
-  }
-  function vLineIntersections(lng,poly){
-    const ys=[];
-    const n=poly.length;
-    for(let i=0;i<n;i++){
-      const j=(i+1)%n;
-      const ax=poly[i].lng,ay=poly[i].lat,bx=poly[j].lng,by=poly[j].lat;
-      if((ax-lng)*(bx-lng)>0||Math.abs(bx-ax)<1e-10) continue;
-      const t=(lng-ax)/(bx-ax);
-      if(t<-1e-9||t>1+1e-9) continue;
-      ys.push(ay+(by-ay)*t);
-    }
-    return ys.sort((a,b)=>a-b);
-  }
-
-  function makeRouteGrid(ns){
-    const wps=[];
-    if(!ns){
-      const nStrips=Math.ceil(heightNS/stepCross)+2;
-      const lat0=bnds.minLat-(stepCross/R)*(180/Math.PI);
-      for(let si=0;si<nStrips;si++){
-        const lat=lat0+si*(stepCross/R)*(180/Math.PI);
-        if(lat<bnds.minLat-0.001||lat>bnds.maxLat+0.001) continue;
-        const xs=hLineIntersections(lat,workPoly);
-        if(xs.length<2) continue;
-        const hdg=(si%2===0)?90:-90;
-        if(hdg>0){
-          wps.push({lat,lng:xs[0],heading:hdg,vel,gimbal:gimb,isStripStart:true});
-          wps.push({lat,lng:xs[xs.length-1],heading:hdg,vel,gimbal:gimb,isStripEnd:true});
-        } else {
-          wps.push({lat,lng:xs[xs.length-1],heading:hdg,vel,gimbal:gimb,isStripStart:true});
-          wps.push({lat,lng:xs[0],heading:hdg,vel,gimbal:gimb,isStripEnd:true});
-        }
-      }
-    } else {
-      const cosLat=Math.cos(latMid*toRad);
-      const nStrips=Math.ceil(widthEW/stepCross)+2;
-      const lng0=bnds.minLng-(stepCross/(R*cosLat))*(180/Math.PI);
-      for(let si=0;si<nStrips;si++){
-        const lng=lng0+si*(stepCross/(R*cosLat))*(180/Math.PI);
-        if(lng<bnds.minLng-0.001||lng>bnds.maxLng+0.001) continue;
-        const ys=vLineIntersections(lng,workPoly);
-        if(ys.length<2) continue;
-        const hdg=(si%2===0)?0:180;
-        if(hdg===0){
-          wps.push({lat:ys[0],lng,heading:hdg,vel,gimbal:gimb,isStripStart:true});
-          wps.push({lat:ys[ys.length-1],lng,heading:hdg,vel,gimbal:gimb,isStripEnd:true});
-        } else {
-          wps.push({lat:ys[ys.length-1],lng,heading:hdg,vel,gimbal:gimb,isStripStart:true});
-          wps.push({lat:ys[0],lng,heading:hdg,vel,gimbal:gimb,isStripEnd:true});
-        }
-      }
-    }
-    return wps;
-  }
-
-  let wps=makeRouteGrid(useNS);
-  if(dbl) wps=wps.concat(makeRouteGrid(!useNS));
+  const angle = getEffectiveAngle(workPoly);
+  let wps = makeAngledGrid(angle, stepAlong, stepCross, vel, gimb, workPoly, false);
+  if(dbl) wps = wps.concat(makeAngledGrid((angle+90)%180, stepAlong, stepCross, vel, gimb, workPoly, false));
   // Eliminar waypoints consecutivos con coordenadas idénticas
   let deduped=wps.filter((w,i)=>{
     if(i===0) return true;
@@ -2265,26 +2421,33 @@ function updateStats(){
   const fotosEst=Math.round(dist*1000/stepAlong);
 
   document.getElementById('st_gsd').textContent=gsd.toFixed(1);
-  document.getElementById('st_gsd').className='stat-val'+(gsd<3?' ok':gsd<7?'':' warn');
+  document.getElementById('st_gsd').className='sb-val'+(gsd<3?' ok':gsd<7?'':' warn');
   document.getElementById('st_area').textContent=area.toFixed(2);
   document.getElementById('st_wps').textContent=activeWps.length;
   // Colorear waypoints según límite del RC2
   const wpEl=document.getElementById('st_wps');
-  wpEl.className='stat-val'+(activeWps.length>199?' err':activeWps.length>150?' warn':' ok');
+  wpEl.className='sb-val'+(activeWps.length>199?' err':activeWps.length>150?' warn':' ok');
   document.getElementById('st_dist').textContent=dist.toFixed(2);
   document.getElementById('st_fotos').textContent=fotosEst;
   document.getElementById('st_tiempo').textContent=tiempo.toFixed(1);
-  document.getElementById('st_sep').value=sep.toFixed(1);
-  document.getElementById('st_interval').value=interval.toFixed(2);
+  document.getElementById('st_sep').textContent=sep.toFixed(1);
+  document.getElementById('st_interval').textContent=interval.toFixed(2);
+  // Número de pasadas (strips) — contar cambios de heading en los WPs
+  const pasadas = misionMode==='C' ? polyPoints.length
+    : activeWps.reduce((acc,w,i,arr)=>{
+        if(i===0) return 1;
+        return acc + (w.heading!==arr[i-1].heading ? 1 : 0);
+      }, 0);
+  document.getElementById('st_pasadas').textContent=pasadas;
 
   // Advertencia de waypoints en modo A
   const warn=document.getElementById('wpsWarn');
   if(warn) warn.style.display=(misionMode==='A'&&wpsA.length>199)?'inline':'none';
 }
 function clearStats(){
-  ['st_gsd','st_area','st_wps','st_dist','st_fotos','st_tiempo'].forEach(id=>document.getElementById(id).textContent='—');
-  document.getElementById('st_sep').value='';
-  document.getElementById('st_interval').value='';
+  ['st_gsd','st_area','st_wps','st_dist','st_fotos','st_tiempo','st_pasadas'].forEach(id=>document.getElementById(id).textContent='—');
+  document.getElementById('st_sep').textContent='—';
+  document.getElementById('st_interval').textContent='—';
 }
 
 // ══════════════════════════════════════════════════
@@ -2312,9 +2475,12 @@ async function exportKMZ(){
     const ts=Date.now().toString();
 
     // ── Parámetros de trayectoria (straight line) ────────────────────────────
+    const stopAndShoot = misionMode==='A' &&
+      (document.getElementById('stop_and_shoot')?.checked ?? false);
     const useStraight = document.getElementById('straight_line')?.checked ?? true;
     const turnMode_t  = useStraight ? 'coordinateTurn' : 'toPointAndPassWithContinuityCurvature';
-    const dampDist_t  = useStraight ? '0.2' : '0';
+    // Si stop_and_shoot está activo, dampDist debe ser 0 (drone se detiene completamente)
+    const dampDist_t  = (useStraight || stopAndShoot) ? '0.2' : '0';
     const straightVal = useStraight ? '1' : '0';
 
     const mCfg=`
@@ -2361,10 +2527,46 @@ async function exportKMZ(){
   </Document>
 </kml>`;
 
+    // Acción takePhoto (experimental) — se ejecuta al llegar al WP
+    const takePhotoBlock=(w,i)=>`
+      <wpml:actionGroup>
+        <wpml:actionGroupId>${(i*2)+1}</wpml:actionGroupId>
+        <wpml:actionGroupStartIndex>${i}</wpml:actionGroupStartIndex>
+        <wpml:actionGroupEndIndex>${i}</wpml:actionGroupEndIndex>
+        <wpml:actionGroupMode>sequence</wpml:actionGroupMode>
+        <wpml:actionTrigger><wpml:actionTriggerType>reachPoint</wpml:actionTriggerType></wpml:actionTrigger>
+        <wpml:action>
+          <wpml:actionId>${(i*2)+1}</wpml:actionId>
+          <wpml:actionActuatorFunc>gimbalRotate</wpml:actionActuatorFunc>
+          <wpml:actionActuatorFuncParam>
+            <wpml:gimbalHeadingYawBase>aircraft</wpml:gimbalHeadingYawBase>
+            <wpml:gimbalRotateMode>absoluteAngle</wpml:gimbalRotateMode>
+            <wpml:gimbalPitchRotateEnable>1</wpml:gimbalPitchRotateEnable>
+            <wpml:gimbalPitchRotateAngle>${w.gimbal.toFixed(1)}</wpml:gimbalPitchRotateAngle>
+            <wpml:gimbalRollRotateEnable>0</wpml:gimbalRollRotateEnable>
+            <wpml:gimbalRollRotateAngle>0</wpml:gimbalRollRotateAngle>
+            <wpml:gimbalYawRotateEnable>0</wpml:gimbalYawRotateEnable>
+            <wpml:gimbalYawRotateAngle>0</wpml:gimbalYawRotateAngle>
+            <wpml:gimbalRotateTimeEnable>0</wpml:gimbalRotateTimeEnable>
+            <wpml:gimbalRotateTime>0</wpml:gimbalRotateTime>
+            <wpml:payloadPositionIndex>0</wpml:payloadPositionIndex>
+          </wpml:actionActuatorFuncParam>
+        </wpml:action>
+        <wpml:action>
+          <wpml:actionId>${(i*2)+2}</wpml:actionId>
+          <wpml:actionActuatorFunc>takePhoto</wpml:actionActuatorFunc>
+          <wpml:actionActuatorFuncParam>
+            <wpml:fileSuffix>wp${i}</wpml:fileSuffix>
+            <wpml:payloadPositionIndex>0</wpml:payloadPositionIndex>
+          </wpml:actionActuatorFuncParam>
+        </wpml:action>
+      </wpml:actionGroup>`;
+
     // accionWP: diferencia modo A/B y WP0 vs resto
     // Modo B WP0: gimbalRotate + TurnMode=Stop (drone se detiene al inicio)
     // Modo B WP1+: gimbalEvenlyRotate + TurnMode=Pass (vuelo continuo)
-    // Modo A: gimbalEvenlyRotate en todos
+    // Modo A normal: gimbalEvenlyRotate en todos
+    // Modo A stop_and_shoot: gimbalRotate + takePhoto en secuencia
     const gimbalRotateBlock=(w,i)=>`
       <wpml:actionGroup>
         <wpml:actionGroupId>${i+1}</wpml:actionGroupId>
@@ -2406,17 +2608,23 @@ async function exportKMZ(){
           </wpml:actionActuatorFuncParam>
         </wpml:action>
       </wpml:actionGroup>`;
-    const accionWP=(w,i)=> misionMode==='B'
-      ? (i===0 ? gimbalRotateBlock(w,i) : gimbalEvenlyBlock(w,i))
-      : gimbalEvenlyBlock(w,i);
-    // TurnMode: WP0 en modo B = Stop (el drone arranca desde el borde del polígono)
-    //           resto = Pass (vuelo continuo a través de los puntos intermedios)
-    //           Si straight_line activo: coordinateTurn para todos
+    const accionWP=(w,i)=>{
+      if(misionMode==='B')
+        return i===0 ? gimbalRotateBlock(w,i) : gimbalEvenlyBlock(w,i);
+      if(stopAndShoot)
+        return takePhotoBlock(w,i);
+      return gimbalEvenlyBlock(w,i);
+    };
+
+    // TurnMode según modo y opciones:
+    // Modo A normal     → coordinateTurn (straight) o Pass (curvo)
+    // Modo A stop&shoot → toPointAndStopWithDiscontinuityCurvature (detención total)
+    // Modo B WP0        → Stop; resto → Pass o coordinateTurn
     const turnMode=(i)=>{
-      if(useStraight) return 'coordinateTurn';
-      return (misionMode==='B' && i===0)
-        ? 'toPointAndStopWithContinuityCurvature'
-        : 'toPointAndPassWithContinuityCurvature';
+      if(stopAndShoot) return 'toPointAndStopWithDiscontinuityCurvature';
+      if(useStraight)  return 'coordinateTurn';
+      if(misionMode==='B' && i===0) return 'toPointAndStopWithContinuityCurvature';
+      return 'toPointAndPassWithContinuityCurvature';
     };
 
     const pm_w=wps.map((w,i)=>`
@@ -2714,16 +2922,64 @@ function onSubdivChange(){
   }
 }
 
+// ── Stepper: botones − / + para inputs numéricos ─────────────────────────────
+function step(id, delta){
+  const el = document.getElementById(id);
+  if(!el) return;
+  const min  = el.min  !== '' ? +el.min  : -Infinity;
+  const max  = el.max  !== '' ? +el.max  : Infinity;
+  const s    = el.step !== '' ? +el.step : 1;
+  const cur  = el.value !== '' ? +el.value : (delta > 0 ? min : max);
+  const next = Math.min(max, Math.max(min, Math.round((cur + delta * s) / s) * s));
+  // Redondear a los decimales del step para evitar floating point noise
+  const dec  = (s.toString().split('.')[1] || '').length;
+  el.value   = next.toFixed(dec);
+  el.dispatchEvent(new Event('input', {bubbles:true}));
+}
+
 function setupInputListeners(){
-  ['altura','velocidad','overlap_f','overlap_l','gimbal','f_mm','sw_mm','sh_mm','res_w','res_h','flight_dir','double_grid','intervalo_seg','max_seg_dist','subdiv_on','turn_midpoint','poly_offset'].forEach(id=>{
+  const recalcVelOnB = ['altura','overlap_f'];
+
+  ['altura','velocidad','overlap_f','overlap_l','gimbal','f_mm','sw_mm','sh_mm','res_w','res_h','flight_dir','double_grid','intervalo_seg','max_seg_dist','subdiv_on','turn_midpoint','poly_offset','flight_angle'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el) el.addEventListener('input',()=>{
+    if(!el) return;
+    el.addEventListener('input',()=>{
+      // Validación suave: si el campo está vacío o el valor no es un número válido,
+      // no calcular — esperar a que el usuario termine de escribir
+      if(el.type==='number'){
+        const v = +el.value;
+        const mn = el.min !== '' ? +el.min : -Infinity;
+        const mx = el.max !== '' ? +el.max : Infinity;
+        if(el.value==='' || isNaN(v) || v < mn || v > mx) return;
+      }
+      // En Modo B: si cambia altura u overlap_f, recalcular velocidad primero
+      if(misionMode==='B' && recalcVelOnB.includes(id)){
+        onIntervalChange();
+        return;
+      }
       if(polyPoints.length>=3){
         updateStats();
         if(gmap) drawGMapRoute(); if(leafletMode) drawLeafletRoute();
         if(demoMode) renderCanvas();
       }
     });
+    // Al salir del campo (blur), corregir si el valor quedó fuera de rango
+    if(el.type==='number'){
+      el.addEventListener('blur',()=>{
+        if(el.value==='' || isNaN(+el.value)){
+          el.value = el.defaultValue || el.min || '0';
+          el.dispatchEvent(new Event('input',{bubbles:true}));
+        } else {
+          const mn = el.min !== '' ? +el.min : -Infinity;
+          const mx = el.max !== '' ? +el.max : Infinity;
+          const clamped = Math.min(mx, Math.max(mn, +el.value));
+          if(clamped !== +el.value){
+            el.value = clamped;
+            el.dispatchEvent(new Event('input',{bubbles:true}));
+          }
+        }
+      });
+    }
   });
 }
 // ══════════════════════════════════════════════════
@@ -3175,6 +3431,8 @@ function collectMissionParams(){
     misionMode,
     flight_dir:     document.getElementById('flight_dir')?.value || 'auto',
     double_grid:    g('double_grid'),
+    flight_angle:   g('flight_angle'),
+    stop_and_shoot: g('stop_and_shoot'),
     // subdivisión
     subdiv_on:      g('subdiv_on'),
     max_seg_dist:   g('max_seg_dist'),
@@ -3210,6 +3468,9 @@ function applyMissionParams(p){
   };
   s('mision_nombre',  p.mision_nombre);
   s('flight_dir',     p.flight_dir);
+  s('flight_angle',   p.flight_angle);
+  s('stop_and_shoot', p.stop_and_shoot);
+  onFlightDirChange(); // actualiza panel manual y canvas si aplica
   s('double_grid',    p.double_grid);
   s('subdiv_on',      p.subdiv_on);
   s('max_seg_dist',   p.max_seg_dist);
@@ -3344,14 +3605,24 @@ function showAepStatus(html, type){
 
 // ── INIT al cargar la página ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  // Cargar chip de cámara inicial (Air 3S wide 12MP)
+  // Cargar chip de cámara inicial
   onCameraChange();
+  // Dibujar canvas de ángulo inicial
+  drawAngleCanvas();
   // Listener toggle straight_line (nota de advertencia)
   const slToggle = document.getElementById('straight_line');
   const slNote   = document.getElementById('straightLineNote');
   if(slToggle && slNote){
     slToggle.addEventListener('change', () => {
       slNote.style.display = slToggle.checked ? 'block' : 'none';
+    });
+  }
+  // Listener toggle stop_and_shoot (nota experimental)
+  const ssToggle = document.getElementById('stop_and_shoot');
+  const ssNote   = document.getElementById('stopShootNote');
+  if(ssToggle && ssNote){
+    ssToggle.addEventListener('change', ()=>{
+      ssNote.style.display = ssToggle.checked ? 'block' : 'none';
     });
   }
 });
